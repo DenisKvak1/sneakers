@@ -2,7 +2,7 @@
 import {onMounted, ref, watch} from "vue";
 import MyOffCanvas from "@/components/MyOffCanvas.vue";
 import MainHeader from "@/components/mainHeader.vue";
-import {loadData, readFromSessionStorage, saveData, writeToSessionStorage} from "@/modules/saveLoadData";
+import {loadData,  saveData} from "@/modules/saveLoadData";
 import ShoesItemStore from "@/components/shoesItemStore.vue";
 import router from "@/router/router";
 import ProjectGreyText from "@/components/UI/ProjectGreyText.vue";
@@ -20,7 +20,7 @@ watch(cart, (newD) => {
     saveData('cart',newD)
 }, {deep:true});
 watch(products, (newD) => {
-    writeToSessionStorage('products',newD)
+    saveData('products',newD)
 }, {deep:true});
 watch(buyHistory, (newD) => {
     saveData('buyHistory',newD)
@@ -31,7 +31,7 @@ onMounted( ()=>{
     if(cartLoad){
         cart.value=cartLoad
     }
-    let ProductLoad=readFromSessionStorage('products')
+    let ProductLoad=loadData('products')
     if(ProductLoad){
         products.value=ProductLoad
     }

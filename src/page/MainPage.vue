@@ -7,7 +7,7 @@ import search from "@/modules/BasicSeachItem";
 import mySort from "@/modules/DefaultSortPrice";
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import MyOffCanvas from "@/components/MyOffCanvas.vue";
-import {saveData, loadData, writeToSessionStorage, readFromSessionStorage} from "@/modules/saveLoadData";
+import {saveData, loadData} from "@/modules/saveLoadData";
 
 let state=reactive({
     search:null,
@@ -27,18 +27,39 @@ watch(cart, (newD) => {
     saveData('cart',newD)
 }, {deep:true});
 watch(products, (newD) => {
-    writeToSessionStorage('products',newD)
+    saveData('products',newD)
 }, {deep:true});
+function mergeProducts(productsFromServer, localProducts) {
+    const mergedProducts = [];
 
+    productsFromServer.forEach(serverProduct => {
+        const localProduct = localProducts.find(localProduct => localProduct.id === serverProduct.id);
+
+        if (localProduct) {
+            mergedProducts.push({
+                ...localProduct,
+                ...serverProduct,
+                like: localProduct.like
+            });
+        } else {
+            mergedProducts.push(serverProduct);
+        }
+    });
+
+    return mergedProducts;
+}
 onMounted(async  ()=>{
-    products.value=await fetchData('http://213.227.241.132:3000/sneakers')
+    let ProductLoad=loadData('products')
+    if(ProductLoad){
+        products.value=ProductLoad
+    }
+    let productsLoadServer=await fetchData('http://213.227.241.132:3000/sneakers')
+    if(productsLoadServer.length>products.value.length){
+        products.value = mergeProducts(productsLoadServer, products.value);
+    }
     let cartLoad=loadData('cart')
     if(cartLoad){
         cart.value=cartLoad
-    }
-    let ProductLoad=readFromSessionStorage('products')
-    if(ProductLoad){
-        products.value=ProductLoad
     }
     let bookMarksData=loadData('bookMarks')
 
